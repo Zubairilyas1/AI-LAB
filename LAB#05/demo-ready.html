@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 5 AI Lab Demo - Uninformed Search Strategies</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            color: #2c3e50;
+            background: #f5f7fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 40px 50px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        h1 {
+            color: #1a5276;
+            font-size: 2em;
+            border-bottom: 4px solid #2980b9;
+            padding-bottom: 12px;
+            margin-bottom: 8px;
+        }
+        h2 {
+            color: #2980b9;
+            font-size: 1.6em;
+            margin-top: 35px;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #d4e6f1;
+        }
+        h3 {
+            color: #1a5276;
+            font-size: 1.25em;
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+        p {
+            margin-bottom: 12px;
+            text-align: justify;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0 25px 0;
+            font-size: 0.95em;
+        }
+        th {
+            background: #2980b9;
+            color: white;
+            padding: 10px 14px;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 9px 14px;
+            border-bottom: 1px solid #d5d8dc;
+        }
+        tr:nth-child(even) {
+            background: #eaf2f8;
+        }
+        tr:hover {
+            background: #d4e6f1;
+        }
+        code {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 18px 22px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0 25px 0;
+            font-size: 0.9em;
+            line-height: 1.5;
+            border-left: 4px solid #2980b9;
+        }
+        pre code {
+            background: none;
+            color: #d4d4d4;
+            padding: 0;
+            font-size: 1em;
+        }
+        strong {
+            color: #1a5276;
+        }
+        ul, ol {
+            margin: 10px 0 15px 25px;
+        }
+        li {
+            margin-bottom: 6px;
+        }
+        blockquote {
+            background: #fef9e7;
+            border-left: 5px solid #f39c12;
+            padding: 12px 20px;
+            margin: 12px 0;
+            font-style: italic;
+            border-radius: 0 6px 6px 0;
+        }
+        hr {
+            border: none;
+            border-top: 2px solid #d4e6f1;
+            margin: 30px 0;
+        }
+        .toc {
+            background: #eaf2f8;
+            border: 2px solid #2980b9;
+            border-radius: 8px;
+            padding: 20px 30px;
+            margin: 20px 0;
+        }
+        .toc a {
+            color: #2980b9;
+            text-decoration: none;
+        }
+        .toc a:hover {
+            text-decoration: underline;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        @media print {
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="week-5-demo-uninformed-search-strategies-bfs-dfs-ucs">Week 5 Demo: Uninformed Search Strategies (BFS, DFS, UCS)</h1>
+<p><strong>Course:</strong> Artificial Intelligence | <strong>Lab:</strong> Week 5 | <strong>CLO-2:</strong> Apply classical AI techniques to solve structured problems</p>
+<hr />
+<h2 id="quick-reference-what-each-algorithm-does">Quick Reference: What Each Algorithm Does</h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>BFS</th>
+<th>DFS</th>
+<th>UCS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Data Structure</strong></td>
+<td>Queue (FIFO)</td>
+<td>Stack (LIFO)</td>
+<td>Priority Queue (heapq)</td>
+</tr>
+<tr>
+<td><strong>Explores</strong></td>
+<td>Level by level</td>
+<td>Deep first, then backtracks</td>
+<td>Lowest cost first</td>
+</tr>
+<tr>
+<td><strong>Optimal for</strong></td>
+<td>Fewest edges (unweighted)</td>
+<td>Not guaranteed</td>
+<td>Lowest total cost (weighted)</td>
+</tr>
+<tr>
+<td><strong>Complete?</strong></td>
+<td>Yes (finite graph)</td>
+<td>Yes (with visited set)</td>
+<td>Yes (non-negative costs)</td>
+</tr>
+<tr>
+<td><strong>Memory</strong></td>
+<td>High (stores entire level)</td>
+<td>Low (stores current path)</td>
+<td>Moderate</td>
+</tr>
+<tr>
+<td><strong>Real-world use</strong></td>
+<td>Minimum transfers</td>
+<td>File system search</td>
+<td>Route planning</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="task-1-bfs-for-minimum-transfer-public-transport-routing">TASK 1: BFS for Minimum-Transfer Public Transport Routing</h2>
+<h3 id="what-it-does">What It Does</h3>
+<p>Finds the route with <strong>minimum number of transfers</strong> from FAST University to PIMS Metro Station using Islamabad's transport network.</p>
+<h3 id="key-answer-points">Key Answer Points</h3>
+<p><strong>Q: Why BFS and not DFS?</strong></p>
+<blockquote>
+<p>BFS guarantees the shortest path in an <strong>unweighted graph</strong> (minimum edges). Since every transfer is one equal-cost transition, BFS finds the minimum-transfer route. DFS might find a longer route first because it goes deep into one branch.</p>
+</blockquote>
+<p><strong>Q: Why test goal when popping from queue, not when pushing?</strong></p>
+<blockquote>
+<p>If we test when pushing, we might find the goal via a longer path first (if it's added early). Testing when popping guarantees we've explored ALL nodes at the current level first — so the first time we pop the goal, it's at the <strong>minimum depth</strong>.</p>
+</blockquote>
+<p><strong>Q: What is the role of the visited set?</strong></p>
+<blockquote>
+<p>Prevents cycles (e.g., NUST ↔ G-11 ↔ H-8 ↔ FAST) and prevents re-adding nodes already in the queue. Without it, BFS would loop infinitely on cyclic graphs.</p>
+</blockquote>
+<p><strong>Q: Why use <code>deque</code> instead of a regular list?</strong></p>
+<blockquote>
+<p><code>deque.popleft()</code> is O(1), while <code>list.pop(0)</code> is O(n). BFS constantly removes from the front, so <code>deque</code> is efficient.</p>
+</blockquote>
+<p><strong>Q: What does the <code>parent</code> dictionary do?</strong></p>
+<blockquote>
+<p>Stores <code>child → parent</code> mapping. After finding the goal, we walk backwards from goal to start using parent pointers to reconstruct the path. This is O(V) space instead of storing full paths.</p>
+</blockquote>
+<p><strong>Q: What does <code>level</code> track?</strong></p>
+<blockquote>
+<p><code>level[node] = distance from start in edges</code>. <code>level[neighbor] = level[current] + 1</code>. This shows BFS explores level 0 → 1 → 2 → 3.</p>
+</blockquote>
+<h3 id="graph-structure">Graph Structure</h3>
+<div class="codehilite"><pre><span></span><code>FAST University → NUST Metro Station → Faiz Ahmed Faiz Metro Station → PIMS (3 transitions)
+FAST University → G-11 Metro Station (alternative)
+FAST University → H-8 Metro Station → I-8 → Blue Area → PIMS (longer alternative)
+NUST → Saddar → Faiz Ahmed Faiz (alternative branch)
+</code></pre></div>
+
+<h3 id="actual-output">Actual Output</h3>
+<div class="codehilite"><pre><span></span><code>Traversal Order:
+  1. FAST University
+  2. NUST Metro Station
+  3. G-11 Metro Station
+  4. H-8 Metro Station
+  5. Faiz Ahmed Faiz Metro Station
+  6. Saddar Metro Station
+  7. I-8 Metro Station
+  8. PIMS Metro Station
+
+Solution Path:
+FAST University → NUST Metro Station → Faiz Ahmed Faiz Metro Station → PIMS Metro Station
+
+Number of Transitions: 3
+</code></pre></div>
+
+<h3 id="why-bfs-explores-level-by-level">Why BFS Explores Level by Level</h3>
+<ul>
+<li><strong>Level 0:</strong> FAST University</li>
+<li><strong>Level 1:</strong> NUST, G-11, H-8 (directly connected)</li>
+<li><strong>Level 2:</strong> Faiz Ahmed Faiz, Saddar, I-8 (two hops from start)</li>
+<li><strong>Level 3:</strong> PIMS (three hops — goal found!)</li>
+</ul>
+<p>The FIFO queue ensures all Level 1 nodes are processed before any Level 2 node.</p>
+<hr />
+<h2 id="task-2-tree-search-vs-graph-search">TASK 2: Tree Search vs Graph Search</h2>
+<h3 id="what-it-does_1">What It Does</h3>
+<p>Demonstrates <strong>3 configurations</strong> of BFS on hospital navigation:</p>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Structure</th>
+<th>Visited Set</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Part 1</td>
+<td>Tree (no cycles)</td>
+<td>NOT used</td>
+<td>Works fine</td>
+</tr>
+<tr>
+<td>Part 2A</td>
+<td>Graph (cycle)</td>
+<td>NOT used</td>
+<td>Repeated states, potential infinite loop</td>
+</tr>
+<tr>
+<td>Part 2B</td>
+<td>Graph (cycle)</td>
+<td>USED</td>
+<td>Terminates correctly</td>
+</tr>
+</tbody>
+</table>
+<h3 id="key-answer-points_1">Key Answer Points</h3>
+<p><strong>Q: Why doesn't a tree need a visited set?</strong></p>
+<blockquote>
+<p>A tree has <strong>no back-edges</strong> — every node has exactly one path back to the root. No node can be reached twice through different paths. So no repeated states occur.</p>
+</blockquote>
+<p><strong>Q: What is the cycle in Part 2A?</strong></p>
+<blockquote>
+<p><code>Main Corridor → Waiting Area → Main Corridor → Waiting Area → ...</code>
+Without a visited set, each time Waiting Area is expanded, it re-adds Main Corridor, and vice versa.</p>
+</blockquote>
+<p><strong>Q: What does <code>max_steps</code> do in Part 2A?</strong></p>
+<blockquote>
+<p>It's only a <strong>safety limit for the demo</strong> — it prevents the notebook from running forever. It's NOT part of the BFS concept. In real code without a visited set, this would loop infinitely.</p>
+</blockquote>
+<p><strong>Q: How does the visited set fix the cycle?</strong></p>
+<blockquote>
+<p>When Waiting Area generates Main Corridor, the algorithm checks: <code>if neighbor not in visited</code>. Since Main Corridor was already visited, it's <strong>skipped</strong>. The cycle is broken.</p>
+</blockquote>
+<p><strong>Q: What is the actual problem demonstrated?</strong></p>
+<blockquote>
+<p>Real-world environments are graphs (interconnected buildings, networks). Graph search algorithms <strong>must</strong> track explored states to handle cycles. Tree search assumptions don't hold for real environments.</p>
+</blockquote>
+<p><strong>Q: Why is the tree traversal different from the path?</strong></p>
+<blockquote>
+<p>Traversal = ALL nodes visited in order (7 nodes). Path = only the solution route (4 nodes: Main Entrance → Emergency Lobby → Waiting Area → Radiology Department).</p>
+</blockquote>
+<h3 id="comparison-table-from-lab">Comparison Table (from lab)</h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Tree</th>
+<th>Graph</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Multiple paths to same location</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Back-edges</td>
+<td>No</td>
+<td>Possible</td>
+</tr>
+<tr>
+<td>Cycles</td>
+<td>No</td>
+<td>Possible</td>
+</tr>
+<tr>
+<td>Repeated states possible</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>BFS without visited set</td>
+<td>Can work</td>
+<td>Can fail/infinite loop</td>
+</tr>
+<tr>
+<td>Visited set</td>
+<td>Not required</td>
+<td>Essential</td>
+</tr>
+</tbody>
+</table>
+<h3 id="actual-outputs">Actual Outputs</h3>
+<p><strong>Part 1 (Tree):</strong></p>
+<div class="codehilite"><pre><span></span><code>Traversal: Main Entrance → Reception → Emergency Lobby → Registration → Waiting Area → Main Corridor → Radiology Department
+Path: Main Entrance → Emergency Lobby → Waiting Area → Radiology Department
+</code></pre></div>
+
+<p><strong>Part 2A (No visited set):</strong></p>
+<div class="codehilite"><pre><span></span><code>Step 5: Waiting Area adds [&#39;Radiology Department&#39;, &#39;Main Corridor&#39;] → Queue: [..., &#39;Main Corridor&#39;, &#39;Waiting Area&#39;, &#39;Main Corridor&#39;]
+Step 6: Main Corridor adds [&#39;Waiting Area&#39;] → Queue: [..., &#39;Main Corridor&#39;, &#39;Waiting Area&#39;]
+</code></pre></div>
+
+<p>→ Main Corridor and Waiting Area keep reappearing!</p>
+<p><strong>Part 2B (With visited set):</strong></p>
+<div class="codehilite"><pre><span></span><code>Step 6: Main Corridor → added: [] (empty — Waiting Area already visited)
+Visited Set: {&#39;Emergency Lobby&#39;, &#39;Registration&#39;, &#39;Reception&#39;, &#39;Main Corridor&#39;, &#39;Waiting Area&#39;, &#39;Main Entrance&#39;}
+Path: Main Entrance → Emergency Lobby → Waiting Area → Radiology Department
+</code></pre></div>
+
+<hr />
+<h2 id="task-3-dfs-for-warehouse-robot-exploration">TASK 3: DFS for Warehouse Robot Exploration</h2>
+<h3 id="what-it-does_2">What It Does</h3>
+<p>Robot searches from Receiving Area to Inspection Area using <strong>Depth-First Search</strong> — goes as deep as possible before backtracking.</p>
+<h3 id="key-answer-points_2">Key Answer Points</h3>
+<p><strong>Q: Why use a stack (LIFO)?</strong></p>
+<blockquote>
+<p>DFS explores the most recently discovered node first. <code>stack.pop()</code> removes from the END (last in, first out), so the deepest node is always explored next.</p>
+</blockquote>
+<p><strong>Q: What is <code>reversed(graph[current])</code> for?</strong></p>
+<blockquote>
+<p>When we push neighbors in reversed order onto a stack, the LEFTMOST neighbor ends up on TOP of the stack and gets popped first. This makes DFS explore in the natural left-to-right order of the adjacency list.</p>
+</blockquote>
+<p><strong>Q: What does "backtracking" mean?</strong></p>
+<blockquote>
+<p>When a node has no unvisited neighbors (dead end), <code>stack.pop()</code> takes us back to the previous node. Example: after Laptops (dead end), we backtrack to Main Aisle.</p>
+</blockquote>
+<p><strong>Q: Why does DFS NOT guarantee shortest path?</strong></p>
+<blockquote>
+<p>DFS goes deep first. It might find the goal via a long path through one branch, even if a shorter path exists through another branch. In this case it found a 4-edge path (optimal), but that's not guaranteed.</p>
+</blockquote>
+<p><strong>Q: Why is traversal order different from solution path?</strong></p>
+<blockquote>
+<p>Traversal = EVERY node popped from stack (includes dead ends, backtrack points). Solution path = only nodes from start to goal via parent pointers. DFS visits nodes in a different order than the final path.</p>
+</blockquote>
+<p><strong>Q: How does DFS memory usage compare to BFS?</strong></p>
+<blockquote>
+<p>DFS stores only nodes on the current path + siblings on the stack. BFS stores ALL nodes at the current level. For wide graphs, BFS uses much more memory.</p>
+</blockquote>
+<h3 id="actual-output_1">Actual Output</h3>
+<div class="codehilite"><pre><span></span><code>Traversal: Receiving Area → Main Aisle → Electronics → Phones → Inspection Area
+Path: Receiving Area → Main Aisle → Electronics → Phones → Inspection Area
+Number of States Explored: 4
+Stack trace: 
+  Step 1: Pop Receiving Area, push Main Aisle
+  Step 2: Pop Main Aisle, push Packaging/Grocery/Electronics (reversed → Electronics on top)
+  Step 3: Pop Electronics, push Laptops/Phones (reversed → Phones on top)
+  Step 4: Pop Phones, push Inspection Area
+  Step 5: Pop Inspection Area → GOAL FOUND
+</code></pre></div>
+
+<p><strong>Why this order?</strong> DFS goes: Receiving Area → Main Aisle → <strong>Electronics</strong> (first branch) → <strong>Phones</strong> → <strong>Inspection Area</strong>. It never explores Grocery or Packaging because it found the goal first!</p>
+<p><strong>Key observation from lab:</strong> "The exact DFS traversal can depend on the order in which neighbors are stored."</p>
+<hr />
+<h2 id="task-4-ucs-for-delivery-route-optimization">TASK 4: UCS for Delivery Route Optimization</h2>
+<h3 id="what-it-does_3">What It Does</h3>
+<p>Finds the <strong>minimum accumulated cost</strong> route from Islamabad Delivery Hub to Blue Area Delivery Point.</p>
+<h3 id="key-answer-points_3">Key Answer Points</h3>
+<p><strong>Q: Why does UCS use a priority queue?</strong></p>
+<blockquote>
+<p>UCS must always expand the node with the <strong>lowest cumulative path cost</strong>. <code>heapq.heappop()</code> returns the smallest element — <code>(cost, node)</code> tuples are compared by cost first.</p>
+</blockquote>
+<p><strong>Q: Why does UCS NOT find fewest edges?</strong></p>
+<blockquote>
+<p>BFS minimizes edges. UCS minimizes <strong>sum of edge weights</strong>. A 3-edge path costing 11 is worse than a 4-edge path costing 8. UCS picks the cheaper one regardless of edge count.</p>
+</blockquote>
+<p><strong>Q: What is <code>best_cost</code> used for?</strong></p>
+<blockquote>
+<p>Stores the best known cost to reach each node. When we find a cheaper path to a node we've already seen, we update <code>best_cost</code> and re-add it to the queue. This handles the case where a cheaper route is found later.</p>
+</blockquote>
+<p><strong>Q: Why check <code>if current in best_cost and current_cost &gt; best_cost[current]</code>?</strong></p>
+<blockquote>
+<p>This is a <strong>stale entry check</strong>. A node might be in the priority queue multiple times (via different paths). If we pop it with a cost higher than what we already know, we skip it — we already have a better path.</p>
+</blockquote>
+<p><strong>Q: What is the goal test timing?</strong></p>
+<blockquote>
+<p>Goal test when <strong>popping from priority queue</strong> — same reasoning as BFS. Since the priority queue always gives the lowest-cost node, popping the goal guarantees it's via the cheapest path.</p>
+</blockquote>
+<p><strong>Q: What's the difference between UCS and Dijkstra's algorithm?</strong></p>
+<blockquote>
+<p>They're essentially the same for this use case. UCS stops when it pops the goal; Dijkstra continues until all nodes are processed.</p>
+</blockquote>
+<h3 id="actual-output_2">Actual Output</h3>
+<div class="codehilite"><pre><span></span><code>Step 1: POP Islamabad Delivery Hub (cost=0) → Add I-8 (cost=4), H-8 (cost=2)
+Step 2: POP H-8 Markaz (cost=2) → Add G-8 (cost=5)
+Step 3: POP I-8 Markaz (cost=4) → Add F-8 (cost=9), Blue Area (cost=12)
+Step 4: POP G-8 Markaz (cost=5) → Add Blue Area (cost=11)
+Step 5: POP F-8 Markaz (cost=9)
+Step 6: POP Blue Area Delivery Point (cost=11) → GOAL FOUND
+
+Solution: Islamabad Delivery Hub → H-8 Markaz → G-8 Markaz → Blue Area Delivery Point
+Total Cost: 11
+</code></pre></div>
+
+<p><strong>Why this path?</strong>
+- Route 1 (via I-8): Hub → I-8 → Blue Area = 4 + 8 = <strong>12</strong>
+- Route 2 (via H-8): Hub → H-8 → G-8 → Blue Area = 2 + 3 + 6 = <strong>11</strong> ✓ CHEAPEST
+- Route 3 (via F-8): Hub → H-8 → G-8 → F-8 → Blue = 2 + 3 + 4 + 3 = <strong>12</strong></p>
+<p>UCS picks Route 2 because 11 &lt; 12, even though it has 3 edges vs 2 edges for Route 1.</p>
+<hr />
+<h2 id="task-5-formal-state-space-modeling-home-task">TASK 5: Formal State-Space Modeling (Home Task)</h2>
+<h3 id="what-it-does_4">What It Does</h3>
+<p>Defines the formal problem representation for a hospital robot (Pharmacy → Emergency Department) <strong>before</strong> implementing any search algorithm.</p>
+<h3 id="key-answer-points_4">Key Answer Points</h3>
+<p><strong>Q: Why separate problem definition from search algorithm?</strong></p>
+<blockquote>
+<p>The lab teaches: "problem formulation comes before search algorithm implementation." The same graph/representation should work for BFS, DFS, and UCS — only the frontier selection logic changes. This is the core principle of AI problem-solving.</p>
+</blockquote>
+<p><strong>Q: What is a successor function?</strong></p>
+<blockquote>
+<p><code>get_successors(state)</code> returns all states reachable in one action from the current state. It encapsulates "what can I do from here?" — search algorithms call this to expand nodes.</p>
+</blockquote>
+<p><strong>Q: What are the components of a search problem?</strong></p>
+<blockquote>
+<ol>
+<li><strong>Initial State</strong> — where we start</li>
+<li><strong>Goal State</strong> — what we're looking for</li>
+<li><strong>States</strong> — all possible configurations</li>
+<li><strong>Actions</strong> — possible transitions</li>
+<li><strong>Successor Function</strong> — returns neighbors of a state</li>
+<li><strong>Cost Function</strong> — cost of each transition</li>
+<li><strong>Path</strong> — sequence of states from start to goal</li>
+</ol>
+</blockquote>
+<hr />
+<h2 id="task-6-smart-building-navigation-comparison">TASK 6: Smart Building Navigation (Comparison)</h2>
+<h3 id="what-it-does_5">What It Does</h3>
+<p>Runs BFS, DFS, and UCS on the <strong>same building</strong> (Main Lobby → Conference Hall) and compares their behavior.</p>
+<h3 id="key-answer-points_5">Key Answer Points</h3>
+<p><strong>Q: Why do all three algorithms give different paths on the same graph?</strong></p>
+<blockquote>
+<p>Different frontier selection:
+- BFS uses FIFO queue → expands shallowest first → fewest edges
+- DFS uses LIFO stack → expands deepest first → may take winding path
+- UCS uses priority queue → expands lowest cost first → cheapest path</p>
+</blockquote>
+<p><strong>Q: Is BFS optimal?</strong></p>
+<blockquote>
+<p>Yes for <strong>minimum transitions</strong> (edges). No for minimum cost in weighted graphs.</p>
+</blockquote>
+<p><strong>Q: Is DFS optimal?</strong></p>
+<blockquote>
+<p>No — DFS is NOT optimal for either edges or cost. It's useful for deep exploration when memory is limited.</p>
+</blockquote>
+<p><strong>Q: Is UCS optimal?</strong></p>
+<blockquote>
+<p>Yes for <strong>minimum accumulated cost</strong> when all edge costs are non-negative.</p>
+</blockquote>
+<p><strong>Q: How do you determine which algorithm "worked"?</strong></p>
+<blockquote>
+<p>Each is "optimal" under its own objective:
+- BFS: optimal if minimizing transitions
+- DFS: never guaranteed optimal
+- UCS: optimal if minimizing total cost
+The purpose is not to find which "worked" but to understand WHY they differ.</p>
+</blockquote>
+<hr />
+<h2 id="common-questions-the-examiner-might-ask">Common Questions the Examiner Might Ask</h2>
+<h3 id="general-uninformed-search">General Uninformed Search</h3>
+<p><strong>Q: What is "uninformed" (blind) search?</strong></p>
+<blockquote>
+<p>It explores without any domain-specific knowledge or heuristics. It only uses: initial state, possible actions, goal test, and path cost. No additional information about which direction is "better."</p>
+</blockquote>
+<p><strong>Q: What are the 5 key components of uninformed search?</strong></p>
+<blockquote>
+<ol>
+<li>State representation</li>
+<li>Frontier (list of nodes to expand)</li>
+<li>Explored/visited set</li>
+<li>Goal test</li>
+<li>Node expansion (generating successors)</li>
+</ol>
+</blockquote>
+<p><strong>Q: What is the frontier?</strong></p>
+<blockquote>
+<p>Nodes that are <strong>generated but not yet expanded</strong>. Different algorithms manage it differently:
+- BFS: Queue (FIFO)
+- DFS: Stack (LIFO)
+- UCS: Priority Queue (by cost)</p>
+</blockquote>
+<p><strong>Q: Frontier vs Visited set?</strong></p>
+<blockquote>
+<ul>
+<li>Frontier = discovered, waiting to be expanded</li>
+<li>Visited = already expanded</li>
+<li>A node moves from frontier → visited when it's popped and processed</li>
+</ul>
+</blockquote>
+<p><strong>Q: Why can't BFS work on weighted graphs?</strong></p>
+<blockquote>
+<p>BFS assumes all edges have equal cost. On weighted graphs, a path with fewer edges might have higher total cost. For weighted graphs, use UCS.</p>
+</blockquote>
+<p><strong>Q: Can DFS guarantee termination?</strong></p>
+<blockquote>
+<p>Only with a visited set on cyclic graphs. Without it, DFS can loop infinitely. On trees, it terminates naturally.</p>
+</blockquote>
+<h3 id="code-level-questions">Code-Level Questions</h3>
+<p><strong>Q: What does <code>parent = {start: None}</code> mean?</strong></p>
+<blockquote>
+<p>Start has no parent. The path reconstruction loop <code>while node is not None</code> stops when it reaches the start.</p>
+</blockquote>
+<p><strong>Q: Why <code>path.reverse()</code>?</strong></p>
+<blockquote>
+<p>Parent pointers go goal → start (backwards). We reverse to get start → goal (forwards).</p>
+</blockquote>
+<p><strong>Q: What does <code>neighbor not in queue</code> check do (in BFS)?</strong></p>
+<blockquote>
+<p>Prevents adding duplicate nodes to the queue. Without it, a node could be queued multiple times via different parents, wasting memory and time.</p>
+</blockquote>
+<p><strong>Q: Why initialize <code>best_cost = {start: 0}</code> in UCS?</strong></p>
+<blockquote>
+<p>The start node has cost 0. This also prevents re-adding start to the queue if there's a cycle back to it.</p>
+</blockquote>
+<p><strong>Q: What happens if the goal is unreachable?</strong></p>
+<blockquote>
+<p>BFS/DFS: queue/stack empties, loop ends, path is empty. UCS: priority queue empties. All return empty path gracefully.</p>
+</blockquote>
+<hr />
+<h2 id="networkx-visualization-explained">NetworkX Visualization Explained</h2>
+<p><strong>Q: How do you build a graph from a dictionary?</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">neighbor</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">[</span><span class="n">node</span><span class="p">]:</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">neighbor</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Q: How is the solution path highlighted?</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="n">path_edges</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>  <span class="c1"># Convert path to edge list</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx_edges</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">edgelist</span><span class="o">=</span><span class="n">path_edges</span><span class="p">,</span> 
+                       <span class="n">edge_color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Q: What does <code>nx.spring_layout(G, seed=42, k=2.5)</code> do?</strong></p>
+<blockquote>
+<p>Automatically positions nodes using a force-directed algorithm. <code>seed=42</code> makes positions deterministic (same every run). <code>k=2.5</code> spreads nodes apart.</p>
+</blockquote>
+<p><strong>Q: How do you show edge weights for UCS?</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="n">edge_labels</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">get_edge_attributes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="s1">&#39;weight&#39;</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx_edge_labels</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">edge_labels</span><span class="o">=</span><span class="n">edge_labels</span><span class="p">)</span>
+</code></pre></div>
+
+<hr />
+<h2 id="quick-demo-script-30-second-summary-per-task">Quick Demo Script (30-second summary per task)</h2>
+<p><strong>Task 1:</strong> "BFS on transport network. FIFO queue, level-by-level. Found 3-transition path: FAST → NUST → Faiz Ahmed Faiz → PIMS. Goal tested on pop, parent dictionary for path reconstruction."</p>
+<p><strong>Task 2:</strong> "Three runs: tree without visited works because no cycles. Graph without visited shows Main Corridor/Waiting Area repeating (cycle problem). Graph with visited set skips repeats and terminates normally."</p>
+<p><strong>Task 3:</strong> "DFS with LIFO stack. Went deep into Electronics → Phones → Inspection Area. Never explored Grocery or Packaging branches. Backtracking happens when a node has no unvisited neighbors."</p>
+<p><strong>Task 4:</strong> "UCS with heapq priority queue. Always expands lowest cumulative cost. Chose path costing 11 (3 edges) over path costing 12 (2 edges) — minimum cost, not minimum edges."</p>
+<p><strong>Task 5:</strong> "Formal problem definition: initial state, goal state, states, actions, successor function, cost function. Same representation works for BFS, DFS, UCS — only frontier changes."</p>
+<p><strong>Task 6:</strong> "Same building, three algorithms, three different behaviors. BFS=level-by-level (min edges), DFS=deep first (not optimal), UCS=min cost (optimal for weighted). Different frontier selection causes different results."</p>
+    </div>
+</body>
+</html>
